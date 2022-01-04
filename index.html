@@ -45,7 +45,7 @@
       </ul>
     </nav>
 
-    <p>&copy; 2021. All rights reserved. </p>
+    <p>&copy; 2022. All rights reserved. </p>
   </div>
 </aside>
 
@@ -53,10 +53,31 @@
     <div class="posts">
 <article class="post">
   <h1 class="post-title">
+    <a href="https://qzvs.github.io/posts/jian-dan-de-jwt-jiao-cheng-yi/">简单的JWT教程 一</a>
+  </h1>
+  <time datetime="2022-01-04T23:23:00&#43;0800" class="post-date">2022/01/04</time>
+  最近有项目用到JWT，阅读了很多文档，对JWT有了一定的了解。最后就有了这几篇文章来记录了JWT相关的知识。
+简介 JWT（JSON Web Token） RFC7519 可以参考RFC中说明：
+is a compact, URL-safe means of representing claims to be transferred between two parties
+简单说是使用JSON对象在多方之间安全传输信息，主要用于授权以及信息交换等场景。
+结构 JWT由用.(英文句号)分隔的三部分组成，分别是header、payload和signature，通常类似于下面这种:
+xxx.yyy.zzz
+三部分都采用Base64URLEncode编码。
+Header header通常由typ类型和alg签名算法两部分组成，下面就是一个header的例子：
+{ &#34;alg&#34;: &#34;HS256&#34;, &#34;typ&#34;: &#34;JWT&#34; } typ一般都是JWT，而alg通常是HS256（HMAC + SHA256）或者RS256（RSASSA-PKCS1-v1_5 + SHA256）算法。
+Payload payload用于存放数据，RFC7519定义了7个可选的字段，可以参考下面的表格：
+   字段 含义     iss 发布者   sub 主题   aud 被颁发者   exp 过期时间   nbf 启用时间   iat 发布时间   jti 唯一标识符    { &#34;sub&#34;: &#34;1234567890&#34;, &#34;nam&#34;: &#34;John Doe&#34;, &#34;adm&#34;: true, &#34;iat&#34;: 1516239022 } 上面就是一个有效的payload，为了减少数据大小，推荐使用缩写。
+  
+  <div class="read-more-link">
+    <a href="/posts/jian-dan-de-jwt-jiao-cheng-yi/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
     <a href="https://qzvs.github.io/about/">关于</a>
   </h1>
   <time datetime="2021-10-02T11:09:51&#43;0800" class="post-date">2021/10/02</time>
-   C++/Go程序员 玩家  
+   Go程序员 一直想当一个全栈工程师  
   
 </article>
 </div>

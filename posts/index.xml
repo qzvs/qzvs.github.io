@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>个人博客</title>
-    <link>https://qzvs.github.io/</link>
-    <description>Recent content on 个人博客</description>
+    <title>Posts on 个人博客</title>
+    <link>https://qzvs.github.io/posts/</link>
+    <description>Recent content in Posts on 个人博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 04 Jan 2022 23:23:00 +0800</lastBuildDate><atom:link href="https://qzvs.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 04 Jan 2022 23:23:00 +0800</lastBuildDate><atom:link href="https://qzvs.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>简单的JWT教程 一</title>
       <link>https://qzvs.github.io/posts/jian-dan-de-jwt-jiao-cheng-yi/</link>
@@ -24,15 +24,6 @@ Header header通常由typ类型和alg签名算法两部分组成，下面就是�
 { &amp;#34;alg&amp;#34;: &amp;#34;HS256&amp;#34;, &amp;#34;typ&amp;#34;: &amp;#34;JWT&amp;#34; } typ一般都是JWT，而alg通常是HS256（HMAC + SHA256）或者RS256（RSASSA-PKCS1-v1_5 + SHA256）算法。
 Payload payload用于存放数据，RFC7519定义了7个可选的字段，可以参考下面的表格：
    字段 含义     iss 发布者   sub 主题   aud 被颁发者   exp 过期时间   nbf 启用时间   iat 发布时间   jti 唯一标识符    { &amp;#34;sub&amp;#34;: &amp;#34;1234567890&amp;#34;, &amp;#34;nam&amp;#34;: &amp;#34;John Doe&amp;#34;, &amp;#34;adm&amp;#34;: true, &amp;#34;iat&amp;#34;: 1516239022 } 上面就是一个有效的payload，为了减少数据大小，推荐使用缩写。</description>
-    </item>
-    
-    <item>
-      <title>关于</title>
-      <link>https://qzvs.github.io/about/</link>
-      <pubDate>Sat, 02 Oct 2021 11:09:51 +0800</pubDate>
-      
-      <guid>https://qzvs.github.io/about/</guid>
-      <description> Go程序员 一直想当一个全栈工程师  </description>
     </item>
     
   </channel>
