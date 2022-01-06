@@ -6,13 +6,26 @@
     <description>Recent content on 个人博客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 04 Jan 2022 23:23:00 +0800</lastBuildDate><atom:link href="https://qzvs.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 06 Jan 2022 23:44:02 +0800</lastBuildDate><atom:link href="https://qzvs.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>简单的JWT教程 一</title>
-      <link>https://qzvs.github.io/posts/jian-dan-de-jwt-jiao-cheng-yi/</link>
+      <title>JWT相关规范</title>
+      <link>https://qzvs.github.io/posts/jwt-xiang-guang-gui-fan/</link>
+      <pubDate>Thu, 06 Jan 2022 23:44:02 +0800</pubDate>
+      
+      <guid>https://qzvs.github.io/posts/jwt-xiang-guang-gui-fan/</guid>
+      <description>简介 JWT有一组被统称为JOSE（JavaScript Object Signing &amp;amp; Encryption）的补充规范来处理签名和加密，由以下组件组成：
+   规范 作用     JWA 签名或加密算法列表   JWS 签名过程   JWE 加密过程   JWK 密钥以及密钥集的格式    我们可以认为JWT是一个接口，而JWS和JWE就是具体的实现。
+JWA JWA （JSON Web Algorithms）RFC7518 定义了一系列的算法用于后面的JWS、JWE和JWK，比如之前说过的HS256HMAC using SHA-256)、RS256(RSASSA-PKCS1-v1_5 using SHA-256)和ES256(ECDSA using P-256 and SHA-256)算法。
+相关的算法可以简单参考下表：
+   &amp;ldquo;alg&amp;rdquo; Param Value Digital Signature or MAC Algorithm Requirements Implementation     HS256 HMAC using SHA-256 Required   HS384 HMAC using SHA-384 Optional   HS512 HMAC using SHA-512 Optional   RS256 RSASSA-PKCS1-v1_5 using SHA-256 Recommended   RS384 RSASSA-PKCS1-v1_5 using SHA-384 Optional   RS512 RSASSA-PKCS1-v1_5 using SHA-512 Optional   ES256 ECDSA using P-256 and SHA-256 Recommended+   ES384 ECDSA using P-384 and SHA-384 Optional   ES512 ECDSA using P-521 and SHA-512 Optional   PS256 RSASSA-PSS using SHA-256 and MGF1 with SHA-256 Optional   PS384 RSASSA-PSS using SHA-384 and MGF1 with SHA-384 Optional   PS512 RSASSA-PSS using SHA-512 and MGF1 with SHA-512 Optional   none No digital signature or MAC performed Optional    none表示是一个不签名的不安全的JWT。</description>
+    </item>
+    
+    <item>
+      <title>简单的JWT教程</title>
+      <link>https://qzvs.github.io/posts/jian-dan-de-jwt-jiao-cheng/</link>
       <pubDate>Tue, 04 Jan 2022 23:23:00 +0800</pubDate>
       
-      <guid>https://qzvs.github.io/posts/jian-dan-de-jwt-jiao-cheng-yi/</guid>
+      <guid>https://qzvs.github.io/posts/jian-dan-de-jwt-jiao-cheng/</guid>
       <description>最近有项目用到JWT，阅读了很多文档，对JWT有了一定的了解。最后就有了这几篇文章来记录了JWT相关的知识。
 简介 JWT（JSON Web Token） RFC7519 可以参考RFC中说明：
 is a compact, URL-safe means of representing claims to be transferred between two parties

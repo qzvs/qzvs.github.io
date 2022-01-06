@@ -53,7 +53,22 @@
     <div class="posts">
 <article class="post">
   <h1 class="post-title">
-    <a href="https://qzvs.github.io/posts/jian-dan-de-jwt-jiao-cheng-yi/">简单的JWT教程 一</a>
+    <a href="https://qzvs.github.io/posts/jwt-xiang-guang-gui-fan/">JWT相关规范</a>
+  </h1>
+  <time datetime="2022-01-06T23:44:02&#43;0800" class="post-date">2022/01/06</time>
+  简介 JWT有一组被统称为JOSE（JavaScript Object Signing &amp; Encryption）的补充规范来处理签名和加密，由以下组件组成：
+   规范 作用     JWA 签名或加密算法列表   JWS 签名过程   JWE 加密过程   JWK 密钥以及密钥集的格式    我们可以认为JWT是一个接口，而JWS和JWE就是具体的实现。
+JWA JWA （JSON Web Algorithms）RFC7518 定义了一系列的算法用于后面的JWS、JWE和JWK，比如之前说过的HS256HMAC using SHA-256)、RS256(RSASSA-PKCS1-v1_5 using SHA-256)和ES256(ECDSA using P-256 and SHA-256)算法。
+相关的算法可以简单参考下表：
+   &ldquo;alg&rdquo; Param Value Digital Signature or MAC Algorithm Requirements Implementation     HS256 HMAC using SHA-256 Required   HS384 HMAC using SHA-384 Optional   HS512 HMAC using SHA-512 Optional   RS256 RSASSA-PKCS1-v1_5 using SHA-256 Recommended   RS384 RSASSA-PKCS1-v1_5 using SHA-384 Optional   RS512 RSASSA-PKCS1-v1_5 using SHA-512 Optional   ES256 ECDSA using P-256 and SHA-256 Recommended+   ES384 ECDSA using P-384 and SHA-384 Optional   ES512 ECDSA using P-521 and SHA-512 Optional   PS256 RSASSA-PSS using SHA-256 and MGF1 with SHA-256 Optional   PS384 RSASSA-PSS using SHA-384 and MGF1 with SHA-384 Optional   PS512 RSASSA-PSS using SHA-512 and MGF1 with SHA-512 Optional   none No digital signature or MAC performed Optional    none表示是一个不签名的不安全的JWT。
+  
+  <div class="read-more-link">
+    <a href="/posts/jwt-xiang-guang-gui-fan/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
+    <a href="https://qzvs.github.io/posts/jian-dan-de-jwt-jiao-cheng/">简单的JWT教程</a>
   </h1>
   <time datetime="2022-01-04T23:23:00&#43;0800" class="post-date">2022/01/04</time>
   最近有项目用到JWT，阅读了很多文档，对JWT有了一定的了解。最后就有了这几篇文章来记录了JWT相关的知识。
@@ -69,7 +84,7 @@ Payload payload用于存放数据，RFC7519定义了7个可选的字段，可以
    字段 含义     iss 发布者   sub 主题   aud 被颁发者   exp 过期时间   nbf 启用时间   iat 发布时间   jti 唯一标识符    { &#34;sub&#34;: &#34;1234567890&#34;, &#34;nam&#34;: &#34;John Doe&#34;, &#34;adm&#34;: true, &#34;iat&#34;: 1516239022 } 上面就是一个有效的payload，为了减少数据大小，推荐使用缩写。
   
   <div class="read-more-link">
-    <a href="/posts/jian-dan-de-jwt-jiao-cheng-yi/">Read More…</a>
+    <a href="/posts/jian-dan-de-jwt-jiao-cheng/">Read More…</a>
   </div>
   
 </article><article class="post">

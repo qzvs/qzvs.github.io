@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-cn" lang="zh-cn">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.88.1" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>JWT相关规范 &middot; 个人博客</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="https://qzvs.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="https://qzvs.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="https://qzvs.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="https://qzvs.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class="theme-base-0c layout-reverse">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="https://qzvs.github.io/"><h1>个人博客</h1></a>
+      <p class="lead">
+       一个简单的个人博客 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="https://qzvs.github.io/">主页</a> </li>
+        <li><a href="https://qzvs.github.io/about"> 关于 </a></li>
+      </ul>
+    </nav>
+
+    <p>&copy; 2022. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>JWT相关规范</h1>
+  <time datetime=2022-01-06T23:44:02&#43;0800 class="post-date">2022/01/06</time>
+  <h2 id="简介"><strong>简介</strong></h2>
+<p>JWT有一组被统称为JOSE（JavaScript Object Signing &amp; Encryption）的补充规范来处理签名和加密，由以下组件组成：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">规范</th>
+<th style="text-align:center">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">JWA</td>
+<td style="text-align:center">签名或加密算法列表</td>
+</tr>
+<tr>
+<td style="text-align:center">JWS</td>
+<td style="text-align:center">签名过程</td>
+</tr>
+<tr>
+<td style="text-align:center">JWE</td>
+<td style="text-align:center">加密过程</td>
+</tr>
+<tr>
+<td style="text-align:center">JWK</td>
+<td style="text-align:center">密钥以及密钥集的格式</td>
+</tr>
+</tbody>
+</table>
+<p>我们可以认为JWT是一个接口，而JWS和JWE就是具体的实现。</p>
+<h2 id="jwa"><strong>JWA</strong></h2>
+<p>JWA （JSON Web Algorithms）<a href="https://datatracker.ietf.org/doc/html/rfc7518">RFC7518</a> 定义了一系列的算法用于后面的JWS、JWE和JWK，比如之前说过的<code>HS256</code>HMAC using SHA-256)、<code>RS256</code>(RSASSA-PKCS1-v1_5 using SHA-256)和<code>ES256</code>(ECDSA using P-256 and SHA-256)算法。</p>
+<p>相关的算法可以简单参考下表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">&ldquo;alg&rdquo; Param  Value</th>
+<th style="text-align:center">Digital Signature or MAC   Algorithm</th>
+<th style="text-align:center">Requirements  Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">HS256</td>
+<td style="text-align:center">HMAC using SHA-256</td>
+<td style="text-align:center">Required</td>
+</tr>
+<tr>
+<td style="text-align:center">HS384</td>
+<td style="text-align:center">HMAC using SHA-384</td>
+<td style="text-align:center">Optional</td>
+</tr>
+<tr>
+<td style="text-align:center">HS512</td>
+<td style="text-align:center">HMAC using SHA-512</td>
+<td style="text-align:center">Optional</td>
+</tr>
+<tr>
+<td style="text-align:center">RS256</td>
+<td style="text-align:center">RSASSA-PKCS1-v1_5 using SHA-256</td>
+<td style="text-align:center">Recommended</td>
+</tr>
+<tr>
+<td style="text-align:center">RS384</td>
+<td style="text-align:center">RSASSA-PKCS1-v1_5 using SHA-384</td>
+<td style="text-align:center">Optional</td>
+</tr>
+<tr>
+<td style="text-align:center">RS512</td>
+<td style="text-align:center">RSASSA-PKCS1-v1_5 using SHA-512</td>
+<td style="text-align:center">Optional</td>
+</tr>
+<tr>
+<td style="text-align:center">ES256</td>
+<td style="text-align:center">ECDSA using P-256 and SHA-256</td>
+<td style="text-align:center">Recommended+</td>
+</tr>
+<tr>
+<td style="text-align:center">ES384</td>
+<td style="text-align:center">ECDSA using P-384 and SHA-384</td>
+<td style="text-align:center">Optional</td>
+</tr>
+<tr>
+<td style="text-align:center">ES512</td>
+<td style="text-align:center">ECDSA using P-521 and SHA-512</td>
+<td style="text-align:center">Optional</td>
+</tr>
+<tr>
+<td style="text-align:center">PS256</td>
+<td style="text-align:center">RSASSA-PSS using SHA-256 and MGF1 with SHA-256</td>
+<td style="text-align:center">Optional</td>
+</tr>
+<tr>
+<td style="text-align:center">PS384</td>
+<td style="text-align:center">RSASSA-PSS using SHA-384 and MGF1 with SHA-384</td>
+<td style="text-align:center">Optional</td>
+</tr>
+<tr>
+<td style="text-align:center">PS512</td>
+<td style="text-align:center">RSASSA-PSS using SHA-512 and MGF1 with SHA-512</td>
+<td style="text-align:center">Optional</td>
+</tr>
+<tr>
+<td style="text-align:center">none</td>
+<td style="text-align:center">No digital signature or MAC  performed</td>
+<td style="text-align:center">Optional</td>
+</tr>
+</tbody>
+</table>
+<p>none表示是一个不签名的不安全的JWT。</p>
+<h2 id="jws"><strong>JWS</strong></h2>
+<p>JWS （JSON Web Signature）<a href="https://datatracker.ietf.org/doc/html/rfc7515">RFC7515</a> 就是我们之前使用JWT实现。</p>
+<p>JWT的第一部分header在一些文档里也被叫做JOSE header，所以在这里记住一下。</p>
+<p>JWS 的序列化实际是有两种，JWS 紧凑序列化（JWS Compact Serialization）和 JWS JSON序列化（JWS JSON Serialization）。
+只有当它遵循紧凑序列化时才称为 JWT。任何JWT都必须遵循紧凑序列化。换句话说，遵循JSON序列化的JWS不能称为JWT。</p>
+<h3 id="jws紧凑序列化">JWS紧凑序列化</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">Base64URLEncode</span>(<span style="color:#a6e22e">UTF8</span>(<span style="color:#a6e22e">JWS</span> <span style="color:#a6e22e">Protected</span> <span style="color:#a6e22e">Header</span>))<span style="color:#f92672">+</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">+</span>
+<span style="color:#a6e22e">Base64URLEncode</span>(<span style="color:#a6e22e">JWS</span> <span style="color:#a6e22e">Payload</span>)<span style="color:#f92672">+</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">+</span>
+<span style="color:#a6e22e">Base64URLEncode</span>(<span style="color:#a6e22e">JWS</span> <span style="color:#a6e22e">Signature</span>)
+</code></pre></div><p>对于紧凑序列化，Protected Header就是整个JOSE header。</p>
+<h3 id="jws-json序列化">JWS JSON序列化</h3>
+<p>考虑到JSON序列化并不算是JWT，这里只是简单举个例子，看看JSON序列化的格式。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">     {
+      <span style="color:#f92672">&#34;payload&#34;</span>:<span style="color:#e6db74">&#34;&lt;payload contents&gt;&#34;</span>,
+      <span style="color:#f92672">&#34;signatures&#34;</span>:[
+       {<span style="color:#f92672">&#34;protected&#34;</span>:<span style="color:#e6db74">&#34;&lt;integrity-protected header 1 contents&gt;&#34;</span>,
+        <span style="color:#f92672">&#34;header&#34;</span>: <span style="color:#e6db74">&#34;&lt;non-integrity-protected header 1 contents&gt;&#34;</span>,
+        <span style="color:#f92672">&#34;signature&#34;</span>:<span style="color:#e6db74">&#34;&lt;signature 1 contents&gt;&#34;</span>},
+       {<span style="color:#f92672">&#34;protected&#34;</span>:<span style="color:#e6db74">&#34;&lt;integrity-protected header N contents&gt;&#34;</span>,
+        <span style="color:#f92672">&#34;header&#34;</span>: <span style="color:#e6db74">&#34;&lt;non-integrity-protected header N contents&gt;&#34;</span>,
+        <span style="color:#f92672">&#34;signature&#34;</span>:<span style="color:#e6db74">&#34;&lt;signature N contents&gt;&#34;</span>}]
+     }
+
+</code></pre></div><h2 id="jwe"><strong>JWE</strong></h2>
+<p>JWE （JSON Web Encryption）<a href="https://datatracker.ietf.org/doc/html/rfc7516">RFC7516</a> 定义了在JWT中表示加密内容的方式。</p>
+<p>JWE同样也是有紧凑序列化和JSON序列化两种。</p>
+<h3 id="jwe紧凑序列化">JWE紧凑序列化</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">Base64URLEncode</span>(<span style="color:#a6e22e">UTF8</span>(<span style="color:#a6e22e">JWE</span> <span style="color:#a6e22e">Protected</span> <span style="color:#a6e22e">Header</span>))<span style="color:#f92672">+</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">+</span>
+<span style="color:#a6e22e">Base64URLEncode</span>(<span style="color:#a6e22e">JWE</span> <span style="color:#a6e22e">Encrypted</span> <span style="color:#a6e22e">Key</span>)<span style="color:#f92672">+</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">+</span>
+<span style="color:#a6e22e">Base64URLEncode</span>(<span style="color:#a6e22e">JWE</span> <span style="color:#a6e22e">Initialization</span> <span style="color:#a6e22e">Vector</span>)<span style="color:#f92672">+</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">+</span>
+<span style="color:#a6e22e">Base64URLEncode</span>(<span style="color:#a6e22e">JWE</span> <span style="color:#a6e22e">Ciphertext</span>)<span style="color:#f92672">+</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">+</span>
+<span style="color:#a6e22e">Base64URLEncode</span>(<span style="color:#a6e22e">JWE</span> <span style="color:#a6e22e">Authentication</span> <span style="color:#a6e22e">Tag</span>)
+</code></pre></div><p>对于紧凑序列化，Protected Header同样也是整个JOSE header。</p>
+<p>具体的加密密钥、初始化向量(IV)、密文和认证标签生成过程就不细讲，直接略过。</p>
+<h3 id="jwe-json序列化">JWE JSON序列化</h3>
+<p>JWE JSON序列化也仅举例说明一下。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">    {
+      <span style="color:#f92672">&#34;protected&#34;</span>:<span style="color:#e6db74">&#34;&lt;integrity-protected shared header contents&gt;&#34;</span>,
+      <span style="color:#f92672">&#34;unprotected&#34;</span>:<span style="color:#e6db74">&#34;&lt;non-integrity-protected shared header contents&gt;&#34;</span>,
+      <span style="color:#f92672">&#34;recipients&#34;</span>:[
+       {<span style="color:#f92672">&#34;header&#34;</span>:<span style="color:#e6db74">&#34;&lt;per-recipient unprotected header 1 contents&gt;&#34;</span>,
+        <span style="color:#f92672">&#34;encrypted_key&#34;</span>:<span style="color:#e6db74">&#34;&lt;encrypted key 1 contents&gt;&#34;</span>},
+       {<span style="color:#f92672">&#34;header&#34;</span>:<span style="color:#e6db74">&#34;&lt;per-recipient unprotected header N contents&gt;&#34;</span>,
+        <span style="color:#f92672">&#34;encrypted_key&#34;</span>:<span style="color:#e6db74">&#34;&lt;encrypted key N contents&gt;&#34;</span>}],
+      <span style="color:#f92672">&#34;aad&#34;</span>:<span style="color:#e6db74">&#34;&lt;additional authenticated data contents&gt;&#34;</span>,
+      <span style="color:#f92672">&#34;iv&#34;</span>:<span style="color:#e6db74">&#34;&lt;initialization vector contents&gt;&#34;</span>,
+      <span style="color:#f92672">&#34;ciphertext&#34;</span>:<span style="color:#e6db74">&#34;&lt;ciphertext contents&gt;&#34;</span>,
+      <span style="color:#f92672">&#34;tag&#34;</span>:<span style="color:#e6db74">&#34;&lt;authentication tag contents&gt;&#34;</span>
+     }
+</code></pre></div><h2 id="jwk"><strong>JWK</strong></h2>
+<p>JWK （JSON Web Key）<a href="https://datatracker.ietf.org/doc/html/rfc7517">RFC7517</a>是使用JSON格式表示加密密钥，同时还定义了一个JWKs (JWK Set)表示一组JWK。</p>
+<pre tabindex="0"><code>-----BEGIN RSA PRIVATE KEY-----
+MIICXQIBAAKBgQCBG2PAgK0gL/hp7fcqztLzSffY8sUQLhS0FqcEUT0+PNymnhdY
+M+Bts6Q0L0Fn4mTKrpqg/9SSd8k8j5wi8TogT3ps80azoNx9nvcKrYD1ldN2K646
+KozCESAsoVVFRlnnRxqUQ0sbKL3r7qVwOfAt6GH6QSDsBEhOasE7SICMVQIDAQAB
+AoGAWfQZdmCxP0HtFPFGSz87X2NkGnZbs0BIEInP6IQp5ZlGK5jurvfGIOkPOYTL
+T3Q/wbAR8KcPFtX7EgUFRptIYYZ/UDt+w0rGc0j7QJYrr3ZLLapYE8jtxW8/E8j3
+Q4MIGUbh/fZe+12PGNvH/GX7i+hyfrl8zmPD4uE3qfo96GkCQQDThjK4KUUPT0HE
+G7tLyvfSm2MADeE+wynd0plg/vSu+R4FBv0t8+kQ/jgJirlgO4odRAGp9BxVA2xZ
+Zpvs+jHnAkEAnEDirTjo/iY7gq/uGjpFYQZVxBxqobTzHpcO6tVgOGhaZDOFAZnK
+RStdrLL44gaeDXBM3cBOMhwnjCdfiN7AYwJBAMq9IpnvPHkLD08HAYMI3HWpZ79i
+jlUYvGUXeNlGJYIb1hEdfMdxtB8MeutyYnGBP8UDLNEX35wANvaNacA+olsCQAJz
+chrNfboe12ghYla++z+eXdIJsBKBSB7+t5kvZ6b63BAeTsPLqcST/ZAr7oN9HxWO
+4WXJEnDuyCAGrhTziYkCQQCAMZqXuUhxc4hQkrJs0LBCpoQig3qKFzeacLjyami/
+xgfKpps5np37gCQxcGeqLffUkWdspuSHNndOxZawHNNE
+-----END RSA PRIVATE KEY-----
+</code></pre><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+    <span style="color:#f92672">&#34;kty&#34;</span>: <span style="color:#e6db74">&#34;RSA&#34;</span>,
+    <span style="color:#f92672">&#34;n&#34;</span>: <span style="color:#e6db74">&#34;gRtjwICtIC_4ae33Ks7S80n32PLFEC4UtBanBFE9Pjzcpp4XWDPgbbOkNC9BZ-Jkyq6aoP_UknfJPI-cIvE6IE96bPNGs6DcfZ73Cq2A9ZXTdiuuOiqMwhEgLKFVRUZZ50calENLGyi96-6lcDnwLehh-kEg7ARITmrBO0iAjFU&#34;</span>,
+    <span style="color:#f92672">&#34;e&#34;</span>: <span style="color:#e6db74">&#34;AQAB&#34;</span>,
+    <span style="color:#f92672">&#34;d&#34;</span>: <span style="color:#e6db74">&#34;WfQZdmCxP0HtFPFGSz87X2NkGnZbs0BIEInP6IQp5ZlGK5jurvfGIOkPOYTLT3Q_wbAR8KcPFtX7EgUFRptIYYZ_UDt-w0rGc0j7QJYrr3ZLLapYE8jtxW8_E8j3Q4MIGUbh_fZe-12PGNvH_GX7i-hyfrl8zmPD4uE3qfo96Gk&#34;</span>,
+    <span style="color:#f92672">&#34;p&#34;</span>: <span style="color:#e6db74">&#34;04YyuClFD09BxBu7S8r30ptjAA3hPsMp3dKZYP70rvkeBQb9LfPpEP44CYq5YDuKHUQBqfQcVQNsWWab7Pox5w&#34;</span>,
+    <span style="color:#f92672">&#34;q&#34;</span>: <span style="color:#e6db74">&#34;nEDirTjo_iY7gq_uGjpFYQZVxBxqobTzHpcO6tVgOGhaZDOFAZnKRStdrLL44gaeDXBM3cBOMhwnjCdfiN7AYw&#34;</span>,
+    <span style="color:#f92672">&#34;dp&#34;</span>: <span style="color:#e6db74">&#34;yr0ime88eQsPTwcBgwjcdalnv2KOVRi8ZRd42UYlghvWER18x3G0Hwx663JicYE_xQMs0RffnAA29o1pwD6iWw&#34;</span>,
+    <span style="color:#f92672">&#34;dq&#34;</span>: <span style="color:#e6db74">&#34;AnNyGs19uh7XaCFiVr77P55d0gmwEoFIHv63mS9npvrcEB5Ow8upxJP9kCvug30fFY7hZckScO7IIAauFPOJiQ&#34;</span>,
+    <span style="color:#f92672">&#34;qi&#34;</span>: <span style="color:#e6db74">&#34;gDGal7lIcXOIUJKybNCwQqaEIoN6ihc3mnC48mpov8YHyqabOZ6d-4AkMXBnqi331JFnbKbkhzZ3TsWWsBzTRA&#34;</span>
+}
+</code></pre></div><pre tabindex="0"><code>-----BEGIN RSA PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCBG2PAgK0gL/hp7fcqztLzSffY8sUQLhS0FqcEUT0+PNymnhdYM+Bts6Q0L0Fn4mTKrpqg/9SSd8k8j5wi8TogT3ps80azoNx9nvcKrYD1ldN2K646KozCESAsoVVFRlnnRxqUQ0sbKL3r7qVwOfAt6GH6QSDsBEhOasE7SICMVQIDAQAB
+-----END RSA PUBLIC KEY-----
+</code></pre><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+    <span style="color:#f92672">&#34;kty&#34;</span>: <span style="color:#e6db74">&#34;RSA&#34;</span>,
+    <span style="color:#f92672">&#34;n&#34;</span>: <span style="color:#e6db74">&#34;gRtjwICtIC_4ae33Ks7S80n32PLFEC4UtBanBFE9Pjzcpp4XWDPgbbOkNC9BZ-Jkyq6aoP_UknfJPI-cIvE6IE96bPNGs6DcfZ73Cq2A9ZXTdiuuOiqMwhEgLKFVRUZZ50calENLGyi96-6lcDnwLehh-kEg7ARITmrBO0iAjFU&#34;</span>,
+    <span style="color:#f92672">&#34;e&#34;</span>: <span style="color:#e6db74">&#34;AQAB&#34;</span>
+}
+</code></pre></div><table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>kty</td>
+<td>key type</td>
+<td>类似于RSA或者EC</td>
+</tr>
+<tr>
+<td>n</td>
+<td>the RSA modulus</td>
+<td></td>
+</tr>
+<tr>
+<td>e</td>
+<td>the RSA public exponent</td>
+<td></td>
+</tr>
+<tr>
+<td>d</td>
+<td>the RSA private exponent</td>
+<td></td>
+</tr>
+<tr>
+<td>p</td>
+<td>the first factor</td>
+<td></td>
+</tr>
+<tr>
+<td>q</td>
+<td>the second factor</td>
+<td></td>
+</tr>
+<tr>
+<td>dp</td>
+<td>the first factor&rsquo;s CRT exponent</td>
+<td></td>
+</tr>
+<tr>
+<td>dq</td>
+<td>the second factor&rsquo;s CRT exponent</td>
+<td></td>
+</tr>
+<tr>
+<td>qi</td>
+<td>the (first) CRT coefficient</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<pre tabindex="0"><code>RSAPublicKey ::= SEQUENCE {
+    modulus           INTEGER,  -- n
+    publicExponent    INTEGER   -- e
+}
+
+RSAPrivateKey ::= SEQUENCE {
+    version           Version,
+    modulus           INTEGER,  -- n
+    publicExponent    INTEGER,  -- e
+    privateExponent   INTEGER,  -- d
+    prime1            INTEGER,  -- p
+    prime2            INTEGER,  -- q
+    exponent1         INTEGER,  -- d mod (p-1)
+    exponent2         INTEGER,  -- d mod (q-1)
+    coefficient       INTEGER,  -- (inverse of q) mod p
+    otherPrimeInfos   OtherPrimeInfos OPTIONAL
+}
+</code></pre><h2 id="备注"><strong>备注</strong></h2>
+<h3 id="参考资料">参考资料</h3>
+<p><a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Authentication">HTTP身份认证</a></p>
+<p><a href="https://jwt.io/introduction">Introduction to JSON Web Tokens</a></p>
+<p><a href="https://www.jianshu.com/p/50ade6f2e4fd">一篇文章带你分清楚JWT,JWS与JWE</a></p>
+<p><a href="https://www.freebuf.com/articles/web/180874.html">深入了解Json Web Token之概念篇</a></p>
+<p><a href="https://docs.pingidentity.com/bundle/developer/page/zuh1601508075949.html">JWT and JOSE Developer Guide</a></p>
+<p><a href="http://www.tastones.com/stackoverflow/jwt/getting-started-with-jwt/">JWT入门</a></p>
+<p><a href="https://blog.cssuen.tw/jwt-jwe-jws-%E5%A4%A7%E4%BA%82%E9%AC%A5-5ca68bebe426">JWT &amp; JWE &amp; JWS 大亂鬥！</a></p>
+<p><a href="https://juejin.cn/post/6844903545226035208">JWT: JSON Web Tokens 全方位指南</a></p>
+<p><a href="https://medium.facilelogin.com/jwt-jws-and-jwe-for-not-so-dummies-b63310d201a3">JWT, JWS and JWE for Not So Dummies! (Part I)</a></p>
+<p><a href="https://irrte.ch/jwt-js-decode/pem2jwk.html">PEM to JWK converter</a></p>
+<p><a href="https://www.thedigitalcatonline.com/blog/2018/04/25/rsa-keys/">rsa-keys</a></p>
+<p><a href="https://datatracker.ietf.org/doc/html/rfc8017#section-3.1">KCS #1: RSA Cryptography Specifications Version 2.2</a></p>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>
