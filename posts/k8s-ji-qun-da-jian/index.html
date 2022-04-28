@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-cn" lang="zh-cn">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.88.1" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>k8s集群搭建 &middot; 个人博客</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="https://qzvs.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="https://qzvs.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="https://qzvs.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="https://qzvs.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class="theme-base-0c layout-reverse">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="https://qzvs.github.io/"><h1>个人博客</h1></a>
+      <p class="lead">
+       一个简单的个人博客 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="https://qzvs.github.io/">主页</a> </li>
+        <li><a href="https://qzvs.github.io/about"> 关于 </a></li>
+      </ul>
+    </nav>
+
+    <p>&copy; 2022. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>k8s集群搭建</h1>
+  <time datetime=2022-04-28T23:05:10&#43;0800 class="post-date">2022/04/28</time>
+  <p>本文基于debian11搭建一个1master+1node的k8s集群并安装dashboard</p>
+<h2 id="一-安装docker">一 安装docker</h2>
+<h3 id="1-卸载老版本">1) 卸载老版本</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo apt-get remove docker docker-engine docker.io containerd runc
+</code></pre></div><p>如果提示<code>-bash: sudo：未找到命令</code>，通过下面的命令安装sudo</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">su
+apt install sudo
+</code></pre></div><p>如果提示<code>*** 不在 sudoers 文件中。此事将被报告</code>，通过下面的命令将用户添加到sudo中</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">su
+sudo visudo
+*** ALL<span style="color:#f92672">=(</span>ALL:ALL<span style="color:#f92672">)</span> ALL
+</code></pre></div><h3 id="2-安装依赖">2) 安装依赖</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo apt-get update
+sudo apt-get install <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    ca-certificates <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    curl <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    gnupg <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    lsb-release
+</code></pre></div><h3 id="3-下载gpg">3) 下载gpg</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+</code></pre></div><h3 id="4-写入gpg">4) 写入gpg</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">echo <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  <span style="color:#e6db74">&#34;deb [arch=</span><span style="color:#66d9ef">$(</span>dpkg --print-architecture<span style="color:#66d9ef">)</span><span style="color:#e6db74"> signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+</span><span style="color:#e6db74">  </span><span style="color:#66d9ef">$(</span>lsb_release -cs<span style="color:#66d9ef">)</span><span style="color:#e6db74"> stable&#34;</span> | sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+</code></pre></div><h3 id="5-安装docker">5) 安装docker</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+</code></pre></div><h3 id="6-验证docker安装是否成功">6) 验证docker安装是否成功</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo docker ps
+</code></pre></div><h2 id="二-安装k8s">二 安装k8s</h2>
+<p>参考<a href="https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/">使用 kubeadm 引导集群</a>部署</p>
+<h3 id="1-事前准备">1) 事前准备</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo ifconfig -a
+</code></pre></div><p>获取网络接口的 MAC 地址，排除docker0和lo。后面安装的ip分别是192.168.111.128和192.168.111.132。</p>
+<p>对product_uuid进行校验</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo cat /sys/class/dmi/id/product_uuid
+</code></pre></div><p>确保 br_netfilter 模块被加载</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo lsmod | grep br_netfilter
+</code></pre></div><p>可以使用下面的命令显式加载</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo modprobe br_netfilter
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">cat <span style="color:#e6db74">&lt;&lt;EOF | sudo tee /etc/modules-load.d/k8s.conf
+</span><span style="color:#e6db74">br_netfilter
+</span><span style="color:#e6db74">EOF</span>
+
+cat <span style="color:#e6db74">&lt;&lt;EOF | sudo tee /etc/sysctl.d/k8s.conf
+</span><span style="color:#e6db74">net.bridge.bridge-nf-call-ip6tables = 1
+</span><span style="color:#e6db74">net.bridge.bridge-nf-call-iptables = 1
+</span><span style="color:#e6db74">EOF</span>
+sudo sysctl --system
+</code></pre></div><h3 id="2-安装kubelet-kubeadm-kubectl">2) 安装kubelet kubeadm kubectl</h3>
+<ol>
+<li>更新以及安装依赖</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
+</code></pre></div><ol start="2">
+<li>加载google的公开签名秘钥</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+</code></pre></div><p>由于众所周知的原因，上面的地址需要修改。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg http://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg
+</code></pre></div><ol start="3">
+<li>添加apt仓库</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">echo <span style="color:#e6db74">&#34;deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main&#34;</span> | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+</code></pre></div><ol start="4">
+<li>更新以及安装</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+</code></pre></div><p>众所周知的原因，update也失败了，还是修改一下。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">echo <span style="color:#e6db74">&#34;deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main&#34;</span> | sudo tee /etc/apt/sources.list.d/kubernetes.list
+</code></pre></div><p>使用中科大源或者清华源也可以</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">http://mirrors.ustc.edu.cn/kubernetes/apt/
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">https://mirrors.tuna.tsinghua.edu.cn/kubernetes/apt/
+</code></pre></div><p>然后重新执行上面的<code>update</code>和<code>install</code></p>
+<h3 id="3-使用kubeadm创建集群">3) 使用kubeadm创建集群</h3>
+<ol>
+<li>准备需要的镜像
+还是由于众所周知的原因，我们先查看一下docker镜像信息，避免后面拉不到</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo kubeadm config images list
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">k8s.gcr.io/kube-apiserver:v1.23.5
+k8s.gcr.io/kube-controller-manager:v1.23.5
+k8s.gcr.io/kube-scheduler:v1.23.5
+k8s.gcr.io/kube-proxy:v1.23.5
+k8s.gcr.io/pause:3.6
+k8s.gcr.io/etcd:3.5.1-0
+k8s.gcr.io/coredns/coredns:v1.8.6
+</code></pre></div><p>可以看到上面都是<code>k8s.gcr.io</code>的域名，国内是拉取不到的，我们需要添加<code>--image-repository</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo kubeadm config images list --image-repository registry.aliyuncs.com/google_containers
+</code></pre></div><p>这次可以看到拉到下面这些镜像</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">registry.aliyuncs.com/google_containers/kube-apiserver:v1.23.5
+registry.aliyuncs.com/google_containers/kube-controller-manager:v1.23.5
+registry.aliyuncs.com/google_containers/kube-scheduler:v1.23.5
+registry.aliyuncs.com/google_containers/kube-proxy:v1.23.5
+registry.aliyuncs.com/google_containers/pause:3.6
+registry.aliyuncs.com/google_containers/etcd:3.5.1-0
+registry.aliyuncs.com/google_containers/coredns:v1.8.6
+</code></pre></div><p>使用下面的命令提前拉取镜像</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"> sudo kubeadm config images pull  --image-repository registry.aliyuncs.com/google_containers
+</code></pre></div><ol start="2">
+<li>初始化控制平面节点</li>
+</ol>
+<p>control-plane包括etcd和apiserver</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo kubeadm init <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --apiserver-advertise-address<span style="color:#f92672">=</span>192.168.111.128 <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --image-repository registry.aliyuncs.com/google_containers <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --pod-network-cidr<span style="color:#f92672">=</span>10.244.0.0/16
+</code></pre></div><p><code>--apiserver-advertise-address</code> 可用于为控制平面节点的 API server 设置广播地址， <code>--control-plane-endpoint</code> 可用于为所有控制平面节点设置共享端点，10.244.0.0/16是因为后面使用flannel。</p>
+<p>安装过程中可能出现报错，可以尝试使用下面的命令关闭swap。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo swapoff -a
+yes | cp /etc/fstab /etc/fstab_bak
+cat /etc/fstab_bak | grep -v swap &gt; /etc/fstab
+</code></pre></div><p>清除之后再次安装</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo kudeadm reset
+</code></pre></div><p>出现下面的语句就表示安装成功了</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">Your Kubernetes control-plane has initialized successfully!
+</code></pre></div><p>同时还有一些建议</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown <span style="color:#66d9ef">$(</span>id -u<span style="color:#66d9ef">)</span>:<span style="color:#66d9ef">$(</span>id -g<span style="color:#66d9ef">)</span> $HOME/.kube/config
+
+Alternatively, <span style="color:#66d9ef">if</span> you are the root user, you can run:
+
+  export KUBECONFIG<span style="color:#f92672">=</span>/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run <span style="color:#e6db74">&#34;kubectl apply -f [podnetwork].yaml&#34;</span> with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 192.168.111.128:6443 --token 8ezmrw.qad8mvy7f29a3mb9 <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        --discovery-token-ca-cert-hash sha256:dda6d8438996dccdb7e17e6a9ac640a95d17e315f1c4b40da5d793930f66d4ba
+</code></pre></div><p>按照上面的提示进行设置</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown <span style="color:#66d9ef">$(</span>id -u<span style="color:#66d9ef">)</span>:<span style="color:#66d9ef">$(</span>id -g<span style="color:#66d9ef">)</span> $HOME/.kube/config
+
+su root
+export KUBECONFIG<span style="color:#f92672">=</span>/etc/kubernetes/admin.conf
+</code></pre></div><p>然后可以使用下面的命令查看nodes状态</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get nodes
+</code></pre></div><p>这里显示<code>NotReady</code></p>
+<p>使用这条命令</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe node debianserver
+</code></pre></div><p>在最下面可以看到kube-proxy处于staring</p>
+<p>使用下面的命令</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pod -n kube-system -o wide
+</code></pre></div><p>可以看到coredns pending，因为我们没有安装CNI插件flannel</p>
+<ol start="3">
+<li>安装flannel</li>
+</ol>
+<p>手动下载<a href="https://raw.githubusercontent.com/flannel-io/flannel/v0.17.0/Documentation/kube-flannel.yml">kube-flannel.yml</a></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f ./kube-flannel.yaml
+</code></pre></div><p>再使用<code>kubectl get nodes</code>可以看到现在是<code>Ready</code>了。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">
+</code></pre></div><h3 id="4-使用kubeadm加入集群">4) 使用kubeadm加入集群</h3>
+<p>我们之前创建集群的输出中有提示如何加入一个集群</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo kubeadm join 192.168.111.128:6443 --token 8ezmrw.qad8mvy7f29a3mb9 <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>        --discovery-token-ca-cert-hash sha256:dda6d8438996dccdb7e17e6a9ac640a95d17e315f1c4b40da5d793930f66d4ba
+</code></pre></div><p>不过上面的token有过期时间，我们可以通过下面的命令查看token是否生效。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubeadm token list
+</code></pre></div><p>没有可以通过下面的命令生成</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubeadm token create
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">q3pt5x.0p4k2bj01k18k6h7
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2&gt;/dev/null | <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>   openssl dgst -sha256 -hex | sed <span style="color:#e6db74">&#39;s/^.* //&#39;</span>
+</code></pre></div><p>根据提示在control-plane机器上执行<code>kubectl get nodes</code>，可以多了一个node，并且两个都是<code>Ready</code>。</p>
+<p>使用<code>kubectl get pod --all-namespaces -o wide</code>可以看到都是正常运行的</p>
+<h3 id="5-安装dashboard">5) 安装dashboard</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">wget https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.1/aio/deploy/recommended.yaml
+</code></pre></div><p>提前下载好yaml文件，使用下面的命令应用</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f dashboard.yaml
+</code></pre></div><p>根据github上面的提示执行<code>kubectl proxy</code>，运行在localhost，外部的浏览器无法打开。改成下面的</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"> kubectl proxy --address<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0.0.0.0&#34;</span> --port<span style="color:#f92672">=</span><span style="color:#ae81ff">8001</span>  --accept-hosts<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;.*&#34;</span>
+</code></pre></div><p>可以使用浏览器打开，但是</p>
+<ol>
+<li>登录按钮是灰色的</li>
+<li>需要Token或者Kubeconfig</li>
+</ol>
+<p>根据提示只能本地访问，简单粗暴一点，使用下面的命令建立一个代理</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl -n kubernetes-dashboard get pod -o name | grep dashboard
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl --namespace<span style="color:#f92672">=</span>kubernetes-dashboard port-forward pod/kubernetes-dashboard-fb8648fd9-w8j7v --address 0.0.0.0 12026:8443
+</code></pre></div><p>我们终于可以打开了</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">https://192.168.111.128:12026/#/login
+</code></pre></div><p>我们可以使用下面的命令获得一个token，不过打开之后会有错误（右上角提示），因为我们没有创建admin-user这个用户。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl -n kubernetes-dashboard describe secret <span style="color:#66d9ef">$(</span>kubectl -n kubernetes-dashboard get secret | grep admin-user | awk <span style="color:#e6db74">&#39;{print $1}&#39;</span><span style="color:#66d9ef">)</span>
+</code></pre></div><p>使用下面的命令创建用户并获取token</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">---
+<span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">v1</span>
+<span style="color:#f92672">kind</span>: <span style="color:#ae81ff">ServiceAccount</span>
+<span style="color:#f92672">metadata</span>:
+  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">admin-user</span>
+  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">kubernetes-dashboard</span>
+
+---
+<span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">rbac.authorization.k8s.io/v1</span>
+<span style="color:#f92672">kind</span>: <span style="color:#ae81ff">ClusterRoleBinding</span>
+<span style="color:#f92672">metadata</span>:
+  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">admin-user</span>
+<span style="color:#f92672">roleRef</span>:
+  <span style="color:#f92672">apiGroup</span>: <span style="color:#ae81ff">rbac.authorization.k8s.io</span>
+  <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">ClusterRole</span>
+  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cluster-admin</span>
+<span style="color:#f92672">subjects</span>:
+- <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">ServiceAccount</span>
+  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">admin-user</span>
+  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">kubernetes-dashboard</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"> kubectl apply -f dashboard-adminuser.yaml
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl -n kubernetes-dashboard get secret <span style="color:#66d9ef">$(</span>kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{.secrets[0].name}&#34;</span><span style="color:#66d9ef">)</span> -o go-template<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{.data.token | base64decode}}&#34;</span>
+</code></pre></div><p>最后可以在页面正确看到k8s集群信息。</p>
+<h2 id="三-参考">三 参考</h2>
+<p><a href="https://docs.docker.com/engine/install/debian/">Install Docker Engine on Debian</a></p>
+<p><a href="https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/">使用 kubeadm 引导集群</a></p>
+<p><a href="https://www.cnblogs.com/tylerzhou/p/10971336.html">使用kubernetes 官网工具kubeadm部署kubernetes(使用阿里云镜像)</a></p>
+<p><a href="https://www.cnblogs.com/jackluo/p/12228289.html">利用kubernetes 安装 Kubernetes Dashboard</a></p>
+<p><a href="https://blog.csdn.net/weixin_52270081/article/details/121426166">K8S组件&mdash;&ndash;图形化web界面Dashboard搭建安装，让k8s管理更简单</a></p>
+<p><a href="https://blog.csdn.net/rockstics/article/details/122966334">kubernetes dashboard 授权/权限/角色绑定问题导致页面报错</a></p>
+
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>

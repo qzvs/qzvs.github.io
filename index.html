@@ -53,6 +53,20 @@
     <div class="posts">
 <article class="post">
   <h1 class="post-title">
+    <a href="https://qzvs.github.io/posts/k8s-ji-qun-da-jian/">k8s集群搭建</a>
+  </h1>
+  <time datetime="2022-04-28T23:05:10&#43;0800" class="post-date">2022/04/28</time>
+  本文基于debian11搭建一个1master+1node的k8s集群并安装dashboard
+一 安装docker 1) 卸载老版本 sudo apt-get remove docker docker-engine docker.io containerd runc 如果提示-bash: sudo：未找到命令，通过下面的命令安装sudo
+su apt install sudo 如果提示*** 不在 sudoers 文件中。此事将被报告，通过下面的命令将用户添加到sudo中
+su sudo visudo *** ALL=(ALL:ALL) ALL 2) 安装依赖 sudo apt-get update sudo apt-get install \  ca-certificates \  curl \  gnupg \  lsb-release 3) 下载gpg curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg 4) 写入gpg echo \  &#34;deb [arch=$(dpkg --print-architecture)signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \ $(lsb_release -cs)stable&#34; | sudo tee /etc/apt/sources.
+  
+  <div class="read-more-link">
+    <a href="/posts/k8s-ji-qun-da-jian/">Read More…</a>
+  </div>
+  
+</article><article class="post">
+  <h1 class="post-title">
     <a href="https://qzvs.github.io/posts/jwt-xiang-guang-gui-fan/">JWT相关规范</a>
   </h1>
   <time datetime="2022-01-06T23:44:02&#43;0800" class="post-date">2022/01/06</time>
